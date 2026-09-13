@@ -14,7 +14,12 @@ class UserController extends Controller
         $role = $request->query('role');
         $search = $request->query('search');
 
-        $query = User::with('staff')->latest('id');
+        // $query = User::with('staff')->latest('id');
+
+        $schoolId = auth()->user()->school_id;
+        $query = User::with('staff')
+        ->where('school_id', $schoolId)
+        ->latest('id');
 
         if ($role) {
             $query->where('role', $role);
@@ -28,7 +33,11 @@ class UserController extends Controller
         }
 
         $users = $query->paginate(15)->withQueryString();
-        $unlinkedStaff = Staff::whereNull('user_id')->get();
+        // $unlinkedStaff = Staff::whereNull('user_id')->get();
+
+        $unlinkedStaff = Staff::whereNull('user_id')
+        ->where('school_id', $schoolId)
+        ->get();
 
         return view('users.index', compact('users', 'unlinkedStaff', 'role', 'search'));
     }
